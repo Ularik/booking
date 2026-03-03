@@ -1,0 +1,26 @@
+from src.repositories.base import BaseRepository
+from src.models.hotels import HotelsOrm
+from sqlalchemy import select, func
+
+
+class HotelsRepository(BaseRepository):
+    model = HotelsOrm
+
+    async def get_objects(self,
+                          title,
+                          location,
+                          limit,
+                          offset
+                          ):
+        query = select(HotelsOrm)
+
+        if title:
+            query = query.filter(func.lower(HotelsOrm.title).like(f"%{title.lower()}%"))
+        if location:
+            query = query.filter(func.lower(HotelsOrm.location).like(f"%{location.lower()}%"))
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
+    async def add_obj(self, data):
+        return await super().add_obj(data)
