@@ -20,5 +20,9 @@ class Settings(BaseSettings):
         extra = 'ignore'
     )
 
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
 
 settings = Settings()

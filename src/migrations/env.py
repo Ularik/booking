@@ -25,6 +25,10 @@ if config.config_file_name is not None:
 from src.config import settings
 from src.database import Base
 from src.models.hotels import HotelsOrm
+from src.models.rooms import RoomsOrm
+from src.models.users import UserOrm
+from src.models.bookings import BookingsOrm
+from src.models.facilities import FacilitiesOrm, RoomsFacilities
 
 config.set_main_option("sqlalchemy.url", settings.DB_URL + "?async_fallback=True")
 target_metadata = Base.metadata

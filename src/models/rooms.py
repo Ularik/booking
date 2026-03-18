@@ -1,0 +1,18 @@
+from src.database import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, String
+
+
+class RoomsOrm(Base):
+    __tablename__ = 'rooms'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    hotel_id: Mapped[int] = mapped_column(ForeignKey("hotels.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(String(100))
+    price: Mapped[int]
+    quantity: Mapped[int]
+    facilities: Mapped[list["FacilitiesOrm"]] = relationship(
+        secondary='rooms_facilities',
+        back_populates='rooms'
+    )

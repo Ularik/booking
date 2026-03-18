@@ -1,23 +1,41 @@
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, insert, update, delete, or_
 from pydantic import BaseModel
 
 
 class BaseRepository:
     model = None
+    schema: BaseModel = None
 
     def __init__(self, session):
         self.session = session
 
+    async def get_filtered_objects(self, *filters, **filters_by):
+        new_filters = filters_by.copy()
+        limit = new_filters.pop('limit', None)
+        offset = new_filters.pop('offset', None)
 
-    async def get_objects(self, *args, **kwargs):
-        query = select(self.model)
+        query = (
+            select(self.model)
+            .filter(*filters)
+            .filter_by(**new_filters)
+        )
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+        # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return [self.schema.model_validate(obj) for obj in result.scalars()]
 
-    async def get_one_or_none(self, **kwargs):
-        query = select(self.model).filter_by(**kwargs)
+    async def get_objects(self):
+        return await self.get_filtered_objects()
+
+    async def get_one_or_none(self, **filters):
+        query = select(self.model).filter_by(**filters)
         result = await self.session.execute(query)
-        return result.scalars().one_or_none()
+        result = result.scalars().one_or_none()
+        if result:
+            return self.schema.model_validate(result)
 
     async def add_obj(self, data: BaseModel):
         query = (
@@ -27,33 +45,36 @@ class BaseRepository:
                  )
 
         result = await self.session.execute(query)
-        return result.scalar_one()
+        return self.schema.model_validate(result.scalar_one())
 
-    async def edit(self, data: BaseModel, id: int):
-        exist_one_query = select(self.model).filter_by(id=id)
-        res = await self.session.execute(exist_one_query)
-        existing_obj = res.scalars().all()
-        if not existing_obj:
-            raise BaseException(f"Object with id: {id} does not exist in db")
+    async def edit(self, data: BaseModel, exclude_unset: bool = True, **filters):
 
         query = (
             update(self.model)
-            .filter_by(id=id)
-            .values(**data.model_dump())
+            .filter_by(**filters)
+            .values(**data.model_dump(exclude_unset=exclude_unset))
             .returning(self.model)
         )
 
         result = await self.session.execute(query)
-        return result.scalar_one()
+        return self.schema.model_validate(result.scalar_one())
 
-    async def delete(self, id: int) -> None:
+    async def delete(self, **filters) -> None:
         query = (
             delete(self.model)
-            .filter_by(id=id)
+            .filter_by(**filters)
         )
+        # print(query.compile(compile_kwargs={"literal_binds": True}))
+        await self.session.execute(query)
 
-        result = await self.session.execute(query)
-        return None
+    async def add_bulk(self, items: list[BaseModel]):
+        query = (
+            insert(self.model)
+            .values([item.model_dump() for item in items])
+        )
+        await self.session.execute(query)
+
+
 
     async def edit_bulk(self, data: BaseModel, **filters):
         query = (
@@ -66,12 +87,11 @@ class BaseRepository:
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def delete_bulk(self, **filters):
+    async def delete_bulk(self, *args, **filters):
         query = (
             delete(self.model)
+            .filter(*args)
             .filter_by(**filters)
-            .returning(self.model)
         )
-
-        result = await self.session.execute(query)
-        return result.scalars().all()
+        print(query.compile(compile_kwargs={'literal_binds': True}))
+        await self.session.execute(query)
