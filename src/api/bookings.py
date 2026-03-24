@@ -3,6 +3,7 @@ from datetime import date
 from src.api.dependencies import DBDep, AuthUserDep, PaginationDep
 from fastapi import APIRouter, Body
 from src.schemas.bookings import BookingAddRequestSchema, BookingAddSchema
+from src.tasks.tasks import get_todays_bookings
 
 
 router = APIRouter(prefix="/bookings", tags=["Бронирование"])
@@ -26,6 +27,8 @@ async def get_all_bookings(
         paging: PaginationDep
 ):
     bookings_list = await db.bookingsModel.get_filtered_objects(limit=paging.limit, offset=paging.offset)
+    get_todays_bookings.delay()
+    # return None
     return bookings_list
 
 

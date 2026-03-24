@@ -1,8 +1,8 @@
 from src.repositories.base import BaseRepository
 from src.models.facilities import FacilitiesOrm
-from src.schemas.facilities import FacilitiesSchema
+from src.repositories.mappers.mappers import FacilityMapper
 
 
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesOrm
-    schema = FacilitiesSchema
+    mapper = FacilityMapper

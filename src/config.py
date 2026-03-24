@@ -1,15 +1,24 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Literal
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
+    MODE: Literal["TEST", "LOCAL", "DEV", "PROD"]
     DB_NAME: str
     DB_HOST: str
     DB_USER: str
     DB_PASSWORD: str
     DB_PORT: str
+
+    REDIS_HOST: str
+    REDIS_PORT: str
+
+    @property
+    def REDIS_URL(self):
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
     def DB_URL(self):

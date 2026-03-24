@@ -1,11 +1,11 @@
 from src.repositories.base import BaseRepository
-from src.models.facilities import RoomsFacilities
-from src.schemas.facilities import FacilitiesRoomsSchema, FacilitiesRoomsAddSchema
-from sqlalchemy import select, update, insert
+from src.models.facilities import RoomsFacilitiesOrm
+from src.schemas.facilities import FacilitiesRoomsAddSchema
+from src.repositories.mappers.mappers import FacilityRoomMapper
 
 class RoomsFacilitiesRepository(BaseRepository):
-    model = RoomsFacilities
-    schema = FacilitiesRoomsSchema
+    model = RoomsFacilitiesOrm
+    mapper = FacilityRoomMapper
 
     async def set_rooms_facilities(self, room_id, facilities: list[int] = None, **kwargs):
 

@@ -2,8 +2,6 @@ from fastapi import Depends, Request, HTTPException
 from pydantic import BaseModel, Field
 from typing import Annotated
 
-from pygments.styles.dracula import yellow
-
 from src.services.auth import AuthService
 from src.utils.utils import DbManager
 from src.database import AsyncSession
@@ -24,17 +22,14 @@ def get_token(request: Request) -> str:
     return token
 
 def get_current_user_id(token: str = Depends(get_token)) -> str:
-    user_data = AuthService().encode_token(token)
+    user_data = AuthService.encode_token(token)
     return user_data['user_id']
 
 AuthUserDep = Annotated[int, Depends(get_current_user_id)]
 
 
-def get_db_manager():
-    return DbManager(session_factory=AsyncSession)
-
 async def get_db():
-    async with get_db_manager() as db:
+    async with DbManager(session_factory=AsyncSession) as db:
         yield db
 
 DBDep = Annotated[DbManager, Depends(get_db)]

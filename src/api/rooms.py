@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Body
-from src.schemas.rooms import RoomAddSchema, RoomSchema, RoomEditSchema, RoomAddRequestSchema, RoomEditRequestSchema
-from src.schemas.facilities import FacilitiesRoomsAddSchema
+from fastapi_cache.decorator import cache
 from fastapi import Query
 from datetime import date
+
+from src.schemas.rooms import RoomAddSchema, RoomSchema, RoomEditSchema, RoomAddRequestSchema, RoomEditRequestSchema
+from src.schemas.facilities import FacilitiesRoomsAddSchema
 from src.api.dependencies import PaginationDep
 from src.api.dependencies import DBDep
 
@@ -11,6 +13,7 @@ router = APIRouter(prefix='/hotels', tags=['Номера'])
 
 
 @router.get('/{hotel_id}/rooms')
+@cache(expire=15)
 async def get_rooms(
         db: DBDep,
         hotel_id: int,
@@ -25,6 +28,17 @@ async def get_rooms(
         limit=paging.limit,
         offset=paging.offset
     )
+    return rooms
+
+
+@router.get('/{hotel_id}/rooms/{room_id}')
+@cache(expire=15)
+async def get_one_room(
+        db: DBDep,
+        hotel_id: int,
+        room_id: int
+):
+    rooms = await db.roomsModel.get_one_room(hotel_id=hotel_id, room_id=room_id)
     return rooms
 
 

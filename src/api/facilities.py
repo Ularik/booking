@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Body
-from src.schemas.facilities import FacilitiesSchema, FacilitiesAddSchema
-from fastapi import Query
-from datetime import date
-from src.api.dependencies import PaginationDep
+from fastapi import APIRouter
+from fastapi_cache.decorator import cache
+from src.tasks.tasks import task_test
+
+
+from src.schemas.facilities import FacilitiesAddSchema
 from src.api.dependencies import DBDep
 
 
@@ -10,12 +11,11 @@ router = APIRouter(prefix='/facilities', tags=['Удобства'])
 
 
 @router.get('/')
+@cache(expire=10)
 async def get_facilities(
         db: DBDep,
-        paging: PaginationDep,
 ):
-    facilities = await db.facilitiesModel.get_filtered_objects(limit=paging.limit, offset=paging.offset)
-    return facilities
+    return await db.facilitiesModel.get_filtered_objects()
 
 
 @router.post('/')
@@ -25,5 +25,8 @@ async def post_facilities(
 ):
 
     facilities = await db.facilitiesModel.add_obj(data)
+
+    task_test.delay()
+
     await db.save()
     return facilities

@@ -1,0 +1,42 @@
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # Наш fastapi проект
+  booking-app:
+    build: .
+    # Пробрасываем код из Windows в контейнер для Live-reload
+    volumes:
+      - .:/usr/www
+    env_file:
+      - .env
+    command:
+      "uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    restart: always
+
+  # Воркер Celery (исполнитель задач)
+  celery-worker:
+    build: .
+    env_file:
+      - .env
+    # Важно: тот же код, что и у приложения
+    volumes:
+      - .:/usr/www
+    # Замените 'src.worker.celery_app' на путь к вашему объекту Celery()
+    command: celery -A src.tasks.celery_app:celery_instance worker --loglevel=info -B
+    depends_on:
+      - redis
+      - booking-app
+    restart: always
+
+
+
+
+

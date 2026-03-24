@@ -1,12 +1,13 @@
 from src.repositories.base import BaseRepository
+from src.repositories.mappers.mappers import UserMapper
 from src.models.users import UserOrm
-from src.schemas.users import UserOutSchema, UserHashedPswdSchema
+from src.schemas.users import UserHashedPswdSchema
 from sqlalchemy import select
 
 
 class UsersRepository(BaseRepository):
     model = UserOrm
-    schema = UserOutSchema
+    mapper = UserMapper
 
 
     async def get_user_with_hashed_pswd(self, username: str):

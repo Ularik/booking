@@ -28,7 +28,7 @@ from src.models.hotels import HotelsOrm
 from src.models.rooms import RoomsOrm
 from src.models.users import UserOrm
 from src.models.bookings import BookingsOrm
-from src.models.facilities import FacilitiesOrm, RoomsFacilities
+from src.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 
 config.set_main_option("sqlalchemy.url", settings.DB_URL + "?async_fallback=True")
 target_metadata = Base.metadata

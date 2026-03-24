@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Body, Query
-from src.schemas.hotels import HotelSchema, HotelOutSchema, HotelsEditSchema
-from src.database import AsyncSession
-from src.api.dependencies import PaginationDep
-from src.repositories.hotels import HotelsRepository
-from src.api.dependencies import DBDep
+from fastapi_cache.decorator import cache
 from datetime import date
+
+from src.schemas.hotels import HotelSchema, HotelOutSchema, HotelsEditSchema
+from src.api.dependencies import PaginationDep
+from src.api.dependencies import DBDep
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -29,6 +29,7 @@ async def add_hotel(
 
 
 @router.get("/empty_hotels")
+@cache(expire=15)
 async def get_empty_hotels(
         db: DBDep,
         paging: PaginationDep,
@@ -49,6 +50,7 @@ async def get_empty_hotels(
 
 
 @router.get("/{hotel_id}")
+@cache(expire=10)
 async def get_one_hotel(
         db: DBDep,
         hotel_id: int):

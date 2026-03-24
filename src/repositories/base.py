@@ -1,10 +1,11 @@
 from sqlalchemy import select, insert, update, delete, or_
 from pydantic import BaseModel
+from src.repositories.mappers.base import DataMapper
 
 
 class BaseRepository:
     model = None
-    schema: BaseModel = None
+    mapper: DataMapper = None
 
     def __init__(self, session):
         self.session = session
@@ -25,7 +26,7 @@ class BaseRepository:
             query = query.offset(offset)
         # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
-        return [self.schema.model_validate(obj) for obj in result.scalars()]
+        return [self.mapper.map_to_domain_entity(obj) for obj in result.scalars()]
 
     async def get_objects(self):
         return await self.get_filtered_objects()
@@ -35,7 +36,7 @@ class BaseRepository:
         result = await self.session.execute(query)
         result = result.scalars().one_or_none()
         if result:
-            return self.schema.model_validate(result)
+            return self.mapper.map_to_domain_entity(result)
 
     async def add_obj(self, data: BaseModel):
         query = (
@@ -45,7 +46,7 @@ class BaseRepository:
                  )
 
         result = await self.session.execute(query)
-        return self.schema.model_validate(result.scalar_one())
+        return self.mapper.map_to_domain_entity(result.scalar_one())
 
     async def edit(self, data: BaseModel, exclude_unset: bool = True, **filters):
 
@@ -57,7 +58,7 @@ class BaseRepository:
         )
 
         result = await self.session.execute(query)
-        return self.schema.model_validate(result.scalar_one())
+        return self.mapper.map_to_domain_entity(result.scalar_one())
 
     async def delete(self, **filters) -> None:
         query = (

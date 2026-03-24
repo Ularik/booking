@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Response, Request
+from fastapi import APIRouter, HTTPException, Response
 from src.schemas.users import UsersRequestSchema, UserAddSchema, UserLoginSchema
 from src.repositories.users import UsersRepository
 from src.database import AsyncSession
 from src.services.auth import AuthService
-from src.api.dependencies import AuthUserDep
-
+from src.api.dependencies import DBDep, AuthUserDep
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter()
 
@@ -26,13 +26,17 @@ async def login_user(
 
 
 @router.post("/", summary="Добавление нового пользователя")
-async def add_user(data: UsersRequestSchema):
+async def add_user(
+        db: DBDep,
+        data: UsersRequestSchema
+):
     hashed_password = AuthService().hash_pswd(data.password)
     new_data = UserAddSchema(username=data.username, nik_name=data.nik_name, hashed_password=hashed_password)
-    async with AsyncSession() as session:
-        new_user = await UsersRepository(session).add_obj(new_data)
-        await session.commit()
-
+    try:
+        new_user = await db.usersModel.add_obj(new_data)
+        await db.save()
+    except IntegrityError:
+        raise HTTPException(status_code=404, detail="Такой пользователь существует")
     return new_user
 
 
