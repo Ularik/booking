@@ -8,6 +8,6 @@ def test_integration_to_user():
     assert isinstance(token, str)
 
     payload = AuthService().encode_token(token)
-    print(payload)
     assert payload
     assert payload['id'] == data['id']
+

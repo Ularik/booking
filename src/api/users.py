@@ -6,7 +6,7 @@ from src.services.auth import AuthService
 from src.api.dependencies import DBDep, AuthUserDep
 from sqlalchemy.exc import IntegrityError
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["Пользователи"])
 
 
 @router.post("/login")

@@ -62,8 +62,10 @@ async def add_rooms(
     _model = RoomAddSchema(hotel_id=hotel_id, **data.model_dump(exclude_unset=True))
     room = await db.roomsModel.add_obj(_model)
 
-    room_facilities_data = [FacilitiesRoomsAddSchema(room_id=room.id, facility_id=f) for f in data.facilities]
-    await db.rooms_facilitiesModel.add_bulk(room_facilities_data)
+    if data.facilities:
+        room_facilities_data = [FacilitiesRoomsAddSchema(room_id=room.id, facility_id=f) for f in data.facilities]
+        await db.rooms_facilitiesModel.add_bulk(room_facilities_data)
+
     await db.save()
     return room
 

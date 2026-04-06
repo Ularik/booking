@@ -10,7 +10,7 @@ router = APIRouter(prefix="/bookings", tags=["Бронирование"])
 
 
 @router.get("/me")
-async def get_bookings_list(
+async def get_my_bookings(
         user_id: AuthUserDep,
         db: DBDep,
         paging: PaginationDep,

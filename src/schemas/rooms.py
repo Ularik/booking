@@ -22,7 +22,7 @@ class RoomAddRequestSchema(BaseModel):
     description: str | None
     price: int
     quantity: int
-    facilities: list[int] | None
+    facilities: list[int] | None = None
 
 
 class RoomAddSchema(BaseModel):

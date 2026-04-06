@@ -10,7 +10,7 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered_objects(self, *filters, **filters_by):
+    async def get_filtered_objects(self, *filters, **filters_by) -> list:
         new_filters = filters_by.copy()
         limit = new_filters.pop('limit', None)
         offset = new_filters.pop('offset', None)
@@ -69,11 +69,12 @@ class BaseRepository:
         await self.session.execute(query)
 
     async def add_bulk(self, items: list[BaseModel]):
-        query = (
-            insert(self.model)
-            .values([item.model_dump() for item in items])
-        )
-        await self.session.execute(query)
+        if items:
+            query = (
+                insert(self.model)
+                .values([item.model_dump() for item in items])
+            )
+            await self.session.execute(query)
 
 
 

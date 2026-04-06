@@ -26,3 +26,10 @@ class BookingAddSchema(BaseModel):
     to_date: datetime
     price: int
     model_config = ConfigDict(from_attributes=True)
+
+
+class BookingUpdateSchema(BaseModel):
+    room_id: int
+    user_id: int
+    from_date: datetime
+    to_date: datetime

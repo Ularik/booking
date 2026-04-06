@@ -26,7 +26,7 @@ async def post_facilities(
 
     facilities = await db.facilitiesModel.add_obj(data)
 
-    task_test.delay()
+    # task_test.delay()
 
     await db.save()
     return facilities
