@@ -29,7 +29,7 @@ async def add_hotel(
 
 
 @router.get("/empty_hotels")
-# @cache(expire=15)
+@cache(expire=15)
 async def get_empty_hotels(
         db: DBDep,
         paging: PaginationDep,

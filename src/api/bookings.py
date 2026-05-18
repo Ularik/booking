@@ -1,7 +1,7 @@
 from fastapi.params import Query
 from datetime import date
 from src.api.dependencies import DBDep, AuthUserDep, PaginationDep
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, HTTPException
 from src.schemas.bookings import BookingAddRequestSchema, BookingAddSchema
 from src.tasks.tasks import get_todays_bookings
 
@@ -41,15 +41,18 @@ async def post_bookings(
         "summary": "",
         "description": "",
         "value": {
-            "room_id": 1,
+            "hotel_id": 4,
+            "room_id": 17,
             "from_date": "2026-03-18",
             "to_date": "2026-03-20",
         }
     }
 })):
     room = await db.roomsModel.get_one_or_none(id=data.room_id)
+    if not room:
+        raise HTTPException(400, 'Такой квартиры нет')
     _schema_with_user = BookingAddSchema(user_id=user_id, price=room.price, **data.model_dump())
-    new_booking = await db.bookingsModel.add_obj(_schema_with_user)
+    new_booking = await db.bookingsModel.add_booking(_schema_with_user)
     await db.save()
     return new_booking
 

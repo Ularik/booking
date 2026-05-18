@@ -47,8 +47,8 @@ async def get_users():
     return users
 
 
-@router.get("/get_user")
-async def get_users(user_id: AuthUserDep):
+@router.get("/me")
+async def get_me(user_id: AuthUserDep):
     return user_id
 
 

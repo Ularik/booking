@@ -21,14 +21,14 @@ class RoomsRepository(BaseRepository):
             offset: int = 0) -> list[RoomRelSchema]:
 
         free_rooms_ids = await get_free_rooms_ids(from_date=from_date, to_date=to_date, hotel_id=hotel_id)
-        #  rooms_list = await self.get_filtered_objects(RoomsOrm.id.in_(free_rooms_ids), limit=limit, offset=offset)
         query = (
             select(self.model)
             .options(
                 joinedload(self.model.facilities)
             )
             .filter(RoomsOrm.id.in_(free_rooms_ids))
-        )
+        ).limit(limit).offset(offset)
+
         results = await self.session.execute(query)
         return [RoomRelMapper.map_to_domain_entity(r) for r in results.scalars().unique()]
 

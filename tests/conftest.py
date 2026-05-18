@@ -61,35 +61,46 @@ async def add_user_auth(setup_database, ac) -> UserOutSchema:
             "password": "admin"
         }
     )
-    return response.json()
+    user = response.json()
+    print(response.headers)
+    return user
+
+
+@pytest.fixture(scope="session")
+async def authenticate_ac(add_user_auth, ac) -> UserOutSchema:
+    response = await ac.post(
+        "/users/login",
+        json={
+            "username": "test_user",
+            "password": "admin"
+        }
+    )
+    assert ac.cookies['access_token']
+    yield ac
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def add_hotels(add_user_auth, ac):
-    hotels = []
     with open('tests/mock_hotel.json', 'r', encoding="utf-8") as f:
         hotels = json.loads(f.read())
 
-    for hotel in hotels:
-        _model = HotelSchema(**hotel)
-        await ac.post(
-            "/hotels/",
-            json=_model.model_dump()
-        )
+        for hotel in hotels:
+            _model = HotelSchema(**hotel)
+            await ac.post(
+                "/hotels/",
+                json=_model.model_dump()
+            )
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def add_rooms(add_hotels, ac):
-    rooms = []
     with open('tests/mock_rooms.json', 'r', encoding="utf-8") as f:
         rooms = json.loads(f.read())
 
-    for room in rooms:
-        hotel_id = room.pop('hotel_id')
-        _model = RoomAddRequestSchema(**room)
-        await ac.post(
-            f"/hotels/{hotel_id}/rooms",
-            json=_model.model_dump()
-        )
-
-
+        for room in rooms:
+            hotel_id = room.pop('hotel_id')
+            _model = RoomAddRequestSchema(**room)
+            await ac.post(
+                f"/hotels/{hotel_id}/rooms",
+                json=_model.model_dump()
+            )

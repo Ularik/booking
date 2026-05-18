@@ -14,4 +14,5 @@ class UsersRepository(BaseRepository):
         query = select(self.model).filter_by(username=username)
         result = await self.session.execute(query)
         result = result.scalars().first()
-        return UserHashedPswdSchema.model_validate(result)
+        if result:
+            return UserHashedPswdSchema.model_validate(result)

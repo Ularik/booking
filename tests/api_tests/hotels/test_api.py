@@ -1,4 +1,4 @@
-from src.schemas.hotels import HotelOutSchema
+from src.schemas.hotels import HotelOutSchema, HotelSchema
 
 
 async def test_get_hotels(ac) -> list[HotelOutSchema]:
@@ -14,3 +14,16 @@ async def test_get_hotels(ac) -> list[HotelOutSchema]:
     for hotel in hotels:
         print(hotel['title'])
     return hotels
+
+
+async def test_post_hotels(ac) -> HotelOutSchema:
+    response = await ac.post(
+        "/hotels/",
+        json=HotelSchema(
+            title='Test Hotel Bishkek',
+            location='Testesteron city'
+        ).model_dump()
+    )
+    hotel = response.json()
+    print(hotel)
+    return hotel
