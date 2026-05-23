@@ -1,23 +1,19 @@
 from datetime import date
 from sqlalchemy import select, func
+
+from src.exceptions import NotValidTimedelta
 from src.models.bookings import BookingsOrm
 from src.models.rooms import RoomsOrm
 
 
-async def get_free_rooms_ids(
-        from_date: date,
-        to_date: date,
-        hotel_id: int = None):
+async def get_free_rooms_ids(from_date: date, to_date: date, hotel_id: int = None):
 
+    if to_date <= from_date:
+        raise NotValidTimedelta
     booked_rooms_count = (
-        select(
-            BookingsOrm.room_id.label("booked_rooms_id"),
-            func.count("*").label("booked_count")
-        )
+        select(BookingsOrm.room_id.label("booked_rooms_id"), func.count("*").label("booked_count"))
         .select_from(BookingsOrm)
-        .where(
-            BookingsOrm.from_date <= to_date,
-               BookingsOrm.to_date >= from_date)
+        .where(BookingsOrm.from_date <= to_date, BookingsOrm.to_date >= from_date)
         .group_by(BookingsOrm.room_id)
         .cte(name="booked_rooms")
     )
@@ -25,7 +21,9 @@ async def get_free_rooms_ids(
     rooms_and_quantity = (
         select(
             RoomsOrm.id.label("rooms_id"),
-            (RoomsOrm.quantity - func.coalesce(booked_rooms_count.c.booked_count, 0)).label("free_rooms_count")
+            (RoomsOrm.quantity - func.coalesce(booked_rooms_count.c.booked_count, 0)).label(
+                "free_rooms_count"
+            ),
         )
         .select_from(RoomsOrm)
         .outerjoin(booked_rooms_count, booked_rooms_count.c.booked_rooms_id == RoomsOrm.id)

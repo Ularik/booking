@@ -10,7 +10,6 @@ async def test_get_hotels(ac) -> list[HotelOutSchema]:
         }
     )
     hotels = response.json()
-    print(f"Empty hotels: ")
     for hotel in hotels:
         print(hotel['title'])
     return hotels

@@ -3,6 +3,7 @@ from src.models.facilities import RoomsFacilitiesOrm
 from src.schemas.facilities import FacilitiesRoomsAddSchema
 from src.repositories.mappers.mappers import FacilityRoomMapper
 
+
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
     mapper = FacilityRoomMapper
@@ -20,5 +21,8 @@ class RoomsFacilitiesRepository(BaseRepository):
             await self.delete_bulk(facilities_filter, room_id=room_id)
 
         if inserted_facilities:
-            inserted_facilities = [FacilitiesRoomsAddSchema(room_id=room_id, facility_id=f) for f in inserted_facilities]
+            inserted_facilities = [
+                FacilitiesRoomsAddSchema(room_id=room_id, facility_id=f)
+                for f in inserted_facilities
+            ]
             await self.add_bulk(inserted_facilities)

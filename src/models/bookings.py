@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 class BookingsOrm(Base):
-    __tablename__ = 'bookings'
+    __tablename__ = "bookings"
     id: Mapped[int] = mapped_column(primary_key=True)
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id", ondelete="CASCADE"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))

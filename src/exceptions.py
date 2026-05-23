@@ -1,0 +1,24 @@
+class NoResultException(Exception):
+    detail = "Ошибка"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class ObjectNotFoundException(NoResultException):
+    detail = "Объект не найден"
+
+
+class NotEmptyRoomsException(NoResultException):
+    detail = "Таких номеров не осталось"
+
+
+class UniqueObjIsExistException(Exception):
+    detail = 'Такой объект уже существует'
+
+
+class ThisUserIsExistException(UniqueObjIsExistException):
+    detail = "Такой пользователь уже существует"
+
+
+class NotValidTimedelta(Exception):
+    detail = "Дата выаезда не может быть равна или меньше даты въезда"

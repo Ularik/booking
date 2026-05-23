@@ -10,13 +10,13 @@ class HotelsRepository(BaseRepository):
     model = HotelsOrm
     mapper = HotelMapper
 
-    async def get_hotels_with_free_rooms(self, from_date, to_date, title = None, location = None, limit: int = 10, offset: int = 0):
+    async def get_hotels_with_free_rooms(
+        self, from_date, to_date, title=None, location=None, limit: int = 10, offset: int = 0
+    ):
         free_rooms_ids = await get_free_rooms_ids(from_date=from_date, to_date=to_date)
 
         hotels_ids = (
-            select(RoomsOrm.hotel_id)
-            .select_from(RoomsOrm)
-            .where(RoomsOrm.id.in_(free_rooms_ids))
+            select(RoomsOrm.hotel_id).select_from(RoomsOrm).where(RoomsOrm.id.in_(free_rooms_ids))
         )
 
         filters = []
@@ -25,8 +25,9 @@ class HotelsRepository(BaseRepository):
         if location:
             filters.append(func.lower(HotelsOrm.location).like(f"%{location.lower()}%"))
 
-        return await self.get_filtered_objects(HotelsOrm.id.in_(hotels_ids), *filters, limit=limit, offset=offset)
-
+        return await self.get_filtered_objects(
+            HotelsOrm.id.in_(hotels_ids), *filters, limit=limit, offset=offset
+        )
 
     async def add_obj(self, data):
         return await super().add_obj(data)

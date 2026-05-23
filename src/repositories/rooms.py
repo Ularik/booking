@@ -13,21 +13,21 @@ class RoomsRepository(BaseRepository):
     mapper = RoomMapper
 
     async def get_free_rooms(
-            self,
-            from_date: date,
-            to_date: date,
-            hotel_id: int = None,
-            limit: int = 10,
-            offset: int = 0) -> list[RoomRelSchema]:
+        self, from_date: date, to_date: date, hotel_id: int = None, limit: int = 10, offset: int = 0
+    ) -> list[RoomRelSchema]:
 
-        free_rooms_ids = await get_free_rooms_ids(from_date=from_date, to_date=to_date, hotel_id=hotel_id)
+        free_rooms_ids = await get_free_rooms_ids(
+            from_date=from_date, to_date=to_date, hotel_id=hotel_id
+        )
         query = (
-            select(self.model)
-            .options(
-                joinedload(self.model.facilities)
+            (
+                select(self.model)
+                .options(joinedload(self.model.facilities))
+                .filter(RoomsOrm.id.in_(free_rooms_ids))
             )
-            .filter(RoomsOrm.id.in_(free_rooms_ids))
-        ).limit(limit).offset(offset)
+            .limit(limit)
+            .offset(offset)
+        )
 
         results = await self.session.execute(query)
         return [RoomRelMapper.map_to_domain_entity(r) for r in results.scalars().unique()]
@@ -35,9 +35,7 @@ class RoomsRepository(BaseRepository):
     async def get_one_room(self, room_id: int, hotel_id: int) -> RoomRelSchema:
         query = (
             select(self.model)
-            .options(
-                joinedload(self.model.facilities)
-            )
+            .options(joinedload(self.model.facilities))
             .filter(RoomsOrm.id == room_id)
         )
         results = await self.session.execute(query)

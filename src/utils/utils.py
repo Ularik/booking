@@ -5,11 +5,10 @@ from src.repositories.bookings import BookingsRepository
 from src.repositories.facilities import FacilitiesRepository
 from src.repositories.facilitiesRooms import RoomsFacilitiesRepository
 
-class DbManager:
 
+class DbManager:
     def __init__(self, session_factory):
         self.session_factory = session_factory
-
 
     async def __aenter__(self):
         self.session = self.session_factory()
@@ -27,4 +26,3 @@ class DbManager:
 
     async def save(self):
         await self.session.commit()
-

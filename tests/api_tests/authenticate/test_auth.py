@@ -1,5 +1,5 @@
 import pytest
-from src.schemas.users import UsersRequestSchema
+
 
 @pytest.mark.parametrize(
     "username, password", [

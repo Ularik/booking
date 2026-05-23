@@ -25,10 +25,7 @@ class Settings(BaseSettings):
     def DB_URL(self):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    model_config = SettingsConfigDict(
-        env_file = BASE_DIR  / '.env',
-        extra = 'ignore'
-    )
+    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="ignore")
 
     SECRET_KEY: str
     ALGORITHM: str

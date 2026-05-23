@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from src.models.rooms import RoomsOrm
 from src.repositories.base import BaseRepository
 from src.models.bookings import BookingsOrm
 from src.repositories.mappers.mappers import BookingMapper
@@ -8,6 +7,7 @@ from datetime import date
 from pydantic import BaseModel
 from src.schemas.bookings import BookingAddSchema
 from src.repositories.utils import get_free_rooms_ids
+from src.exceptions import NotEmptyRoomsException
 
 
 class BookingsRepository(BaseRepository):
@@ -15,10 +15,7 @@ class BookingsRepository(BaseRepository):
     mapper = BookingMapper
 
     async def get_todays_bookings(self) -> list[BaseModel]:
-        query = (
-            select(self.model)
-            .filter(self.model.from_date == date.today())
-        )
+        query = select(self.model).filter(self.model.from_date == date.today())
         result = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(res) for res in result.scalars()]
 
@@ -31,6 +28,6 @@ class BookingsRepository(BaseRepository):
         free_rooms_ids = result.scalars().all()
 
         if data.room_id not in free_rooms_ids:
-            raise HTTPException(400, 'Эта квартира уже занята')
+            raise NotEmptyRoomsException
 
         return await super().add_obj(data)

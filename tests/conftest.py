@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+from typing import AsyncGenerator
 from unittest import mock
 
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
@@ -7,7 +9,7 @@ import json
 from src.database import Base, engine_null_pool
 from src.config import settings
 from src.schemas.users import UserOutSchema
-from src.models import *
+from src.models import *  # noqa
 import pytest
 from httpx import ASGITransport, AsyncClient
 from src.schemas.hotels import HotelSchema
@@ -22,14 +24,14 @@ async def check_mode():
     assert settings.MODE == "TEST"
 
 
-async def get_db_null_pool() -> DbManager:
+async def get_db_null_pool() -> AsyncGenerator[DbManager]:
     async with DbManager(session_factory=AsyncSessionNullPool) as db:
         # print("Change DB on DB_NULL_POOL")
         yield db
 
 
 @pytest.fixture(scope="function")
-async def db() -> DbManager:
+async def db() -> AsyncGenerator[DbManager]:
     async for db in get_db_null_pool():
         yield db
 
@@ -43,7 +45,7 @@ async def setup_database(check_mode):
 
 
 @pytest.fixture(scope="session")
-async def ac() -> AsyncClient:
+async def ac() -> AsyncGenerator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
@@ -67,8 +69,8 @@ async def add_user_auth(setup_database, ac) -> UserOutSchema:
 
 
 @pytest.fixture(scope="session")
-async def authenticate_ac(add_user_auth, ac) -> UserOutSchema:
-    response = await ac.post(
+async def authenticate_ac(add_user_auth, ac) -> AsyncGenerator[AsyncClient]:
+    await ac.post(
         "/users/login",
         json={
             "username": "test_user",

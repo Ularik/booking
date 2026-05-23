@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
 
 
 class HotelsEditSchema(BaseModel):
@@ -11,10 +10,8 @@ class HotelSchema(BaseModel):
     title: str
     location: str
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class HotelOutSchema(HotelSchema):
     id: int
-
-

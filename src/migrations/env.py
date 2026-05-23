@@ -1,6 +1,8 @@
+# ruff: noqa: E402
 from logging.config import fileConfig
 from os.path import dirname, abspath
 import sys
+
 root_dir = dirname(dirname(dirname(abspath(__file__))))
 sys.path.insert(0, root_dir)
 
@@ -24,7 +26,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 from src.config import settings
 from src.database import Base
-from src.models.hotels import *
+from src.models.hotels import *  # noqa: F403
 
 config.set_main_option("sqlalchemy.url", settings.DB_URL + "?async_fallback=True")
 target_metadata = Base.metadata
@@ -74,9 +76,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

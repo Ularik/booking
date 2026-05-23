@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, UploadFile
 import shutil
 from src.tasks.tasks import save_resized_images
 
@@ -6,7 +6,7 @@ from src.tasks.tasks import save_resized_images
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
 
 
-@router.post('')
+@router.post("")
 def upload_image(file: UploadFile):
     image_path = f"src/static/images/{file.filename}.jpg"
     with open(image_path, "wb+") as new_file:

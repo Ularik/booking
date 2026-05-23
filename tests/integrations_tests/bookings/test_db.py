@@ -41,4 +41,4 @@ async def test_bookings(db):
         id=updated_booking.id
     )
     assert booking == []
-    print(f"Delete my Booking")
+    print("Delete my Booking")

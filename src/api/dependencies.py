@@ -16,14 +16,16 @@ PaginationDep = Annotated[Pagination, Depends(Pagination)]
 
 
 def get_token(request: Request) -> str:
-    token = request.cookies.get('access_token', None)
+    token = request.cookies.get("access_token", None)
     if not token:
         raise HTTPException(status_code=401, detail="Вы не передали токен аутентификации")
     return token
 
+
 def get_current_user_id(token: str = Depends(get_token)) -> str:
     user_data = AuthService.encode_token(token)
-    return user_data['user_id']
+    return user_data["user_id"]
+
 
 AuthUserDep = Annotated[int, Depends(get_current_user_id)]
 
@@ -31,5 +33,6 @@ AuthUserDep = Annotated[int, Depends(get_current_user_id)]
 async def get_db():
     async with DbManager(session_factory=AsyncSession) as db:
         yield db
+
 
 DBDep = Annotated[DbManager, Depends(get_db)]

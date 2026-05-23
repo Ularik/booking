@@ -10,7 +10,7 @@ class RoomSchema(BaseModel):
     price: int
     quantity: int
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class RoomRelSchema(RoomSchema):

@@ -25,7 +25,7 @@ class BookingAddSchema(BaseModel):
     from_date: datetime
     to_date: datetime
     price: int
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class BookingUpdateSchema(BaseModel):

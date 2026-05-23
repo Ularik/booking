@@ -1,4 +1,4 @@
-from src.schemas.facilities import FacilitiesAddSchema, FacilitiesSchema
+from src.schemas.facilities import FacilitiesSchema
 
 
 async def add_facilities(ac) -> FacilitiesSchema:
