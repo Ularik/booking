@@ -15,7 +15,7 @@ class UserLoginSchema(BaseModel):
 class UserAddSchema(BaseModel):
     username: str
     nik_name: str | None = Field(None)
-    hashed_password: str
+    hashed_password: bytes
 
 
 class UserOutSchema(BaseModel):

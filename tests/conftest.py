@@ -3,6 +3,8 @@ from typing import AsyncGenerator
 from unittest import mock
 
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+mock.patch("celery.Celery.send_task", return_value=None).start()
+mock_celery_task = mock.patch("src.tasks.tasks.task_test.delay", return_value=None).start()
 
 from src.main import app
 import json

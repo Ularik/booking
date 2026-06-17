@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import select, func
 
-from src.exceptions import NotValidTimedelta
+from src.exceptions import NotValidTimedeltaException
 from src.models.bookings import BookingsOrm
 from src.models.rooms import RoomsOrm
 
@@ -9,7 +9,8 @@ from src.models.rooms import RoomsOrm
 async def get_free_rooms_ids(from_date: date, to_date: date, hotel_id: int = None):
 
     if to_date <= from_date:
-        raise NotValidTimedelta
+        raise NotValidTimedeltaException
+
     booked_rooms_count = (
         select(BookingsOrm.room_id.label("booked_rooms_id"), func.count("*").label("booked_count"))
         .select_from(BookingsOrm)

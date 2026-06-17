@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     DB_PORT: str
 
     REDIS_HOST: str
+    REDIS_HOST_DOCKER: str
     REDIS_PORT: str
 
     @property

@@ -42,7 +42,7 @@ class RoomEditRequestSchema(BaseModel):
 
 
 class RoomEditSchema(BaseModel):
-    hotel_id: int | None
+    hotel_id: int | None = None
     title: str | None = None
     description: str | None = None
     price: int | None = None

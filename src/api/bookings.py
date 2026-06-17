@@ -42,7 +42,6 @@ async def post_bookings(
                 "summary": "",
                 "description": "",
                 "value": {
-                    "hotel_id": 4,
                     "room_id": 17,
                     "from_date": "2026-03-18",
                     "to_date": "2026-03-20",

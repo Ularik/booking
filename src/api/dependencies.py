@@ -22,8 +22,8 @@ def get_token(request: Request) -> str:
     return token
 
 
-def get_current_user_id(token: str = Depends(get_token)) -> str:
-    user_data = AuthService.encode_token(token)
+async def get_current_user_id(token: str = Depends(get_token)) -> str:
+    user_data = await AuthService.encode_token(token)
     return user_data["user_id"]
 
 

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Body, Query, HTTPException
 from fastapi_cache.decorator import cache
 from datetime import date
 
-from src.exceptions import NotValidTimedelta, ObjectNotFoundException
+from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, UniqueObjIsExistException
 from src.schemas.hotels import HotelSchema, HotelOutSchema, HotelsEditSchema
-from src.api.dependencies import PaginationDep
-from src.api.dependencies import DBDep
+from src.api.dependencies import PaginationDep, DBDep
+from src.services.hotels import HotelsServices
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -23,7 +23,10 @@ async def add_hotel(
         }
     ),
 ):
-    new_hotel = await db.hotelsModel.add_obj(data)
+    try:
+        new_hotel = await HotelsServices(db).add_hotel(data)
+    except UniqueObjIsExistException as err:
+        raise HTTPException(status_code=404, detail=err.detail)
     await db.save()
     return new_hotel
 
@@ -39,10 +42,10 @@ async def get_empty_hotels(
     to_date: date = Query(date(2026, 3, 23)),
 ):
     try:
-        hotels = await db.hotelsModel.get_hotels_with_free_rooms(
+        hotels = await HotelsServices(db).get_empty_hotels(
             from_date, to_date, title=title, location=location, limit=paging.limit, offset=paging.offset
         )
-    except NotValidTimedelta as err:
+    except NotValidTimedeltaException as err:
         raise HTTPException(400, detail=err.detail)
 
     return hotels
@@ -52,7 +55,7 @@ async def get_empty_hotels(
 @cache(expire=10)
 async def get_one_hotel(db: DBDep, hotel_id: int):
     try:
-        res = await db.hotelsModel.get_one(id=hotel_id)
+        res = await HotelsServices(db).get_one_hotel(hotel_id=hotel_id)
     except ObjectNotFoundException as err:
         raise HTTPException(400, detail=err.detail)
     return res
@@ -60,15 +63,20 @@ async def get_one_hotel(db: DBDep, hotel_id: int):
 
 @router.patch("/{hotel_id}")
 async def patch_hotel(db: DBDep, data: HotelsEditSchema, hotel_id: int):
-
-    res = await db.hotelsModel.edit(data=data, id=hotel_id, exclude_unset=True)
+    try:
+        res = await HotelsServices(db).path_hotel(data=data, hotel_id=hotel_id)
+    except ObjectNotFoundException as err:
+        raise HTTPException(status_code=404, detail=err.detail)
     await db.save()
     return res
 
 
 @router.delete("/{hotel_id}")
 async def delete_hotel(db: DBDep, id: int):
-    await db.hotelsModel.delete(id=id)
+    try:
+        await HotelsServices(db).delete_hotel(hotel_id=id)
+    except ObjectNotFoundException as err:
+        raise HTTPException(status_code=404, detail=err.detail)
     await db.save()
 
     return {200: "delete"}

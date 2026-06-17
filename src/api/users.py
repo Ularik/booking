@@ -15,16 +15,17 @@ async def login_user(data: UserLoginSchema, response: Response):
         user = await UsersRepository(session).get_user_with_hashed_pswd(username=data.username)
         if not user:
             raise HTTPException(status_code=401, detail="Пользователь не найден")
-        if not AuthService().verify_password(data.password, user.hashed_password):
+        if not await AuthService().verify_password(data.password, user.hashed_password):
             raise HTTPException(status_code=401, detail="Неверный пароль!")
-    access_token = AuthService().create_access_token({"user_id": user.id})
+
+    access_token = await AuthService().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token, secure=False)
     return {"access_token": access_token}
 
 
 @router.post("/", summary="Добавление нового пользователя")
 async def add_user(db: DBDep, data: UsersRequestSchema):
-    hashed_password = AuthService().hash_pswd(data.password)
+    hashed_password = await AuthService().hash_pswd(data.password)
     new_data = UserAddSchema(
         username=data.username, nik_name=data.nik_name, hashed_password=hashed_password
     )
@@ -32,7 +33,7 @@ async def add_user(db: DBDep, data: UsersRequestSchema):
         new_user = await db.usersModel.add_obj(new_data)
         await db.save()
     except UniqueObjIsExistException as err:
-        raise HTTPException(status_code=404, detail=err.detail)
+        raise HTTPException(status_code=409, detail=err.detail)
     return new_user
 
 

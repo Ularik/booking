@@ -49,7 +49,6 @@ class BaseRepository:
 
     async def add_obj(self, data: BaseModel):
         query = insert(self.model).values(**data.model_dump()).returning(self.model)
-
         try:
             result = await self.session.execute(query)
         except IntegrityError as err:
@@ -72,12 +71,24 @@ class BaseRepository:
         )
 
         result = await self.session.execute(query)
-        return self.mapper.map_to_domain_entity(result.scalar_one())
+        try:
+            return self.mapper.map_to_domain_entity(result.scalar_one())
+        except NoResultFound:
+            raise ObjectNotFoundException
 
     async def delete(self, **filters) -> None:
         query = delete(self.model).filter_by(**filters)
         # print(query.compile(compile_kwargs={"literal_binds": True}))
         await self.session.execute(query)
+
+    async def check_exist_delete(self, **filters):
+        query = select(self.model).filter_by(**filters)
+        result = await self.session.execute(query)
+        result = result.scalars().all()
+        if len(result):
+            return self.delete(**filters)
+        else:
+            raise ObjectNotFoundException
 
     async def add_bulk(self, items: list[BaseModel]):
         if items:

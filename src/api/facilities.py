@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 from src.schemas.facilities import FacilitiesAddSchema
 from src.api.dependencies import DBDep
+from src.tasks.tasks import task_test
 
 
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
@@ -20,7 +21,7 @@ async def post_facilities(db: DBDep, data: FacilitiesAddSchema):
 
     facilities = await db.facilitiesModel.add_obj(data)
 
-    # task_test.delay()
+    task_test.delay()
 
     await db.save()
     return facilities

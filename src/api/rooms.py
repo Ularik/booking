@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, HTTPException
 from fastapi_cache.decorator import cache
 from fastapi import Query
 from datetime import date
-
+from src.services.rooms import RoomsService
 from src.schemas.rooms import (
     RoomAddSchema,
     RoomSchema,
@@ -13,7 +13,8 @@ from src.schemas.rooms import (
 from src.schemas.facilities import FacilitiesRoomsAddSchema
 from src.api.dependencies import PaginationDep
 from src.api.dependencies import DBDep
-from src.exceptions import NotValidTimedelta, ObjectNotFoundException, UniqueObjIsExistException
+from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, UniqueObjIsExistException, \
+    RoomAlreadyExistException, HotelNotFoundException
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
@@ -28,7 +29,7 @@ async def get_rooms(
     to_date: date = Query(date(2026, 3, 18)),
 ):
     try:
-        rooms = await db.roomsModel.get_free_rooms(
+        rooms = await RoomsService(db).get_rooms(
             hotel_id=hotel_id,
             from_date=from_date,
             to_date=to_date,
@@ -36,7 +37,7 @@ async def get_rooms(
             offset=paging.offset,
         )
         return rooms
-    except NotValidTimedelta as err:
+    except NotValidTimedeltaException as err:
         raise HTTPException(400, detail=err.detail)
 
 
@@ -44,7 +45,7 @@ async def get_rooms(
 @cache(expire=15)
 async def get_one_room(db: DBDep, hotel_id: int, room_id: int):
     try:
-        rooms = await db.roomsModel.get_one(hotel_id=hotel_id, room_id=room_id)
+        rooms = await RoomsService(db).get_one_room(hotel_id=hotel_id, room_id=room_id)
     except ObjectNotFoundException as err:
         raise HTTPException(400, detail=err.detail)
     return rooms
@@ -70,20 +71,10 @@ async def add_rooms(
         }
     ),
 ):
-    _model = RoomAddSchema(hotel_id=hotel_id, **data.model_dump(exclude_unset=True))
-
     try:
-        room = await db.roomsModel.add_obj(_model)
-    except UniqueObjIsExistException as err:
-        raise HTTPException(400, detail=err.detail)
-
-    if data.facilities:
-        room_facilities_data = [
-            FacilitiesRoomsAddSchema(room_id=room.id, facility_id=f) for f in data.facilities
-        ]
-        await db.rooms_facilitiesModel.add_bulk(room_facilities_data)
-
-    await db.save()
+        room = await RoomsService(db).add_room(hotel_id=hotel_id, data=data)
+    except (RoomAlreadyExistException, HotelNotFoundException) as err:
+        raise HTTPException(404, detail=err.detail)
     return room
 
 
@@ -108,20 +99,18 @@ async def edit_rooms(
         }
     ),
 ):
-    _data_dict = data.model_dump(exclude_unset=True)
-    _model = RoomEditSchema(hotel_id=hotel_id, **_data_dict)
-    room = await db.roomsModel.edit(_model, id=room_id, hotel_id=hotel_id)
-
-    if "facilities" in _data_dict:
-        await db.rooms_facilitiesModel.set_rooms_facilities(
-            room_id=room_id, facilities=data.facilities
-        )
-    await db.save()
+    try:
+        room = await RoomsService(db).edit_room(data=data, hotel_id=hotel_id, room_id=room_id)
+    except ObjectNotFoundException as err:
+        raise HTTPException(status_code=404, detail=err.detail)
     return room
 
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
 async def delete_room(db: DBDep, hotel_id: int, room_id: int):
-    await db.roomsModel.delete(id=room_id, hotel_id=hotel_id)
+    try:
+        await RoomsService(db).delete_room(room_id=room_id, hotel_id=hotel_id)
+    except ObjectNotFoundException as err:
+        raise HTTPException(404, detail=err.detail)
     await db.save()
-    return {"delete": "success"}
+    return {"delete": "Удалили номер"}

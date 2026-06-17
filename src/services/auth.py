@@ -1,15 +1,21 @@
 from fastapi import HTTPException
-from pwdlib import PasswordHash
 from datetime import timezone, datetime, timedelta
+import bcrypt
 import jwt
 from src.config import settings
+from src.services.base import BaseService
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 
+class AuthService(BaseService):
+    executor = ThreadPoolExecutor(max_workers=4)
 
-class AuthService:
-    password_hash = PasswordHash.recommended()
+    async def start_in_another_loop(self, func, *args):
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self.executor, func, *args)
 
     @staticmethod
-    def create_access_token(data: dict) -> str:
+    async def create_access_token(data: dict) -> str:
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -18,14 +24,23 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt
 
-    def hash_pswd(self, password: str) -> str:
-        return self.password_hash.hash(password)
+    async def hash_pswd(self, password: str) -> bytes:
+        is_valid = await self.start_in_another_loop(
+            bcrypt.hashpw,
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        )
+        return is_valid
 
-    def verify_password(self, plain_password, hashed_password):
-        return self.password_hash.verify(plain_password, hashed_password)
+    async def verify_password(self, plain_password, hashed_password):
+        return await self.start_in_another_loop(
+            bcrypt.checkpw,
+            plain_password.encode('utf-8'),
+            hashed_password
+        )
 
     @staticmethod
-    def encode_token(token) -> dict:
+    async def encode_token(token) -> dict:
         try:
             user = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
             return user
