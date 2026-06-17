@@ -1,5 +1,3 @@
-from watchfiles import awatch
-
 from src.services.base import BaseService
 from src.schemas.hotels import HotelSchema, HotelsEditSchema
 from datetime import date

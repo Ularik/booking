@@ -22,9 +22,9 @@ class BookingAddRequestSchema(BaseModel):
 class BookingAddSchema(BaseModel):
     room_id: int
     user_id: int
+    price: int | None = None
     from_date: datetime
     to_date: datetime
-    price: int
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 

@@ -1,14 +1,11 @@
-from fastapi import HTTPException
-
 from src.models import RoomsOrm
 from src.repositories.base import BaseRepository
 from src.models.bookings import BookingsOrm
 from src.repositories.mappers.mappers import BookingMapper
-from sqlalchemy import select, insert, select, func, and_, literal
+from sqlalchemy import select, func
 from datetime import date
 from pydantic import BaseModel
 from src.schemas.bookings import BookingAddSchema
-from src.repositories.utils import get_free_rooms_ids
 from src.exceptions import NotEmptyRoomsException, ObjectNotFoundException
 
 
@@ -30,7 +27,7 @@ class BookingsRepository(BaseRepository):
         )
         room = room_result.scalar_one_or_none()
         if not room:
-            raise NotEmptyRoomsException
+            raise ObjectNotFoundException
 
         count_result = await self.session.execute(
             select(func.count(BookingsOrm.id))
@@ -50,7 +47,7 @@ class BookingsRepository(BaseRepository):
             user_id=data.user_id,
             from_date=data.from_date,
             to_date=data.to_date,
-            price=data.price,
+            price=room.price,
         )
         self.session.add(booking)
         await self.session.flush()  # получаем id без коммита

@@ -9,9 +9,9 @@ async def test_bookings(db):
     _model = BookingAddSchema(
         user_id=user.id,
         room_id=room.id,
+        price=room.price,
         from_date=datetime(year=2026, month=3, day=28),
         to_date=datetime(year=2026, month=3, day=30),
-        price=100
     )
     booking = await db.bookingsModel.add_obj(_model)
     await db.save()

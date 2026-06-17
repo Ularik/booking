@@ -40,6 +40,7 @@ async def test_booking_race_condition():
     )
 
     statuses = [r.status_code for r in responses if not isinstance(r, Exception)]
+
     successful = statuses.count(200)
     failed = statuses.count(409)
 
