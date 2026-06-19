@@ -4,16 +4,13 @@ from fastapi import Query
 from datetime import date
 from src.services.rooms import RoomsService
 from src.schemas.rooms import (
-    RoomAddSchema,
     RoomSchema,
-    RoomEditSchema,
     RoomAddRequestSchema,
     RoomEditRequestSchema,
 )
-from src.schemas.facilities import FacilitiesRoomsAddSchema
 from src.api.dependencies import PaginationDep
 from src.api.dependencies import DBDep
-from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, UniqueObjIsExistException, \
+from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, \
     RoomAlreadyExistException, HotelNotFoundException
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])

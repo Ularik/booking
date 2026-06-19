@@ -2,6 +2,7 @@ from src.exceptions import ObjectNotFoundException, NotEmptyRoomsException
 from src.schemas.bookings import BookingAddRequestSchema, BookingAddSchema
 from src.services.base import BaseService
 from datetime import date
+from src.tasks.tasks import check_is_paid
 
 class BookingServices(BaseService):
 
@@ -24,6 +25,10 @@ class BookingServices(BaseService):
         try:
             new_booking = await self.db.bookingsModel.add_booking(_schema_with_user)
             await self.db.save()
+            result = check_is_paid.apply_async(
+                args=[new_booking.id],
+                countdown=15
+            )
         except NotEmptyRoomsException as ex:
             raise NotEmptyRoomsException
         except ObjectNotFoundException:

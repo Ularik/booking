@@ -17,7 +17,7 @@ services:
       - .env
     networks:
       - booking_network
-    command: celery --app=src.tasks.celery_app:celery_instance worker -l INFO
+    command: celery -A src.tasks.celery_app:celery_instance worker --loglevel=INFO
 
   celery_beat:
     build:
@@ -26,7 +26,7 @@ services:
       - .env
     networks:
       - booking_network
-    command: celery --app=src.tasks.celery_app:celery_instance beat -l INFO
+    command: celery -A src.tasks.celery_app:celery_instance beat --loglevel=INFO
 
 networks:
   booking_network:
