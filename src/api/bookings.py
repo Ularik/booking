@@ -5,7 +5,8 @@ from fastapi import APIRouter, Body, HTTPException
 from src.exceptions import ObjectNotFoundException, NotEmptyRoomsException
 from src.schemas.bookings import BookingAddRequestSchema
 from src.services.bookings import BookingServices
-
+from src.tasks.tasks import task_generate_pdf, get_todays_bookings
+from celery import chain
 
 router = APIRouter(prefix="/bookings", tags=["Бронирование"])
 
@@ -61,3 +62,14 @@ async def delete_bookings(
 ):
     await BookingServices(db).delete_booking(room_id, from_date, to_date)
     return {"message": "delete success"}
+
+
+@router.post("/reports/generate/")
+async def start_report_generation(request):
+    report_workflow = chain(
+        get_todays_bookings.s() | task_generate_pdf.s()
+    )
+
+    result_group = report_workflow.delay()
+
+    return {"task_id": result_group.id, "status": "processing"}

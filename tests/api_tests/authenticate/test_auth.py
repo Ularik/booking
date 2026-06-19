@@ -23,7 +23,7 @@ async def test_auth_event_loop(ac):
         ('user8', 'user8'),
 
     ]
-    start_time = time.time()
+    start_time = time.monotonic()
 
     results = await asyncio.gather(
         *[ac.post(
@@ -38,7 +38,7 @@ async def test_auth_event_loop(ac):
     successful = statuses.count(200)
     assert successful == 8
 
-    end_time = time.time()
+    end_time = time.monotonic()
     print(f"Авторизация трёх польщователей закончилась за {end_time - start_time} - сек")
 
 

@@ -1,5 +1,4 @@
 from src.tasks.celery_app import celery_instance
-from time import sleep
 from src.api.dependencies import DbManager
 from src.models.bookings import Status
 from src.database import AsyncSessionNullPool
@@ -7,6 +6,8 @@ from src.schemas.bookings import BookingUpdateSchema
 from PIL import Image
 import os
 import asyncio
+from src.utils.generate_pdf import generate_pdf
+from enum import Enum
 
 
 async def delete_booking(booking_id: int):
@@ -25,21 +26,26 @@ def check_is_paid(booking_id: int):
 
 
 @celery_instance.task
-def task_test():
-    sleep(5)
-    print("I am groot")
+def task_generate_pdf(bookings: list[dict]):
+    return generate_pdf(bookings)
 
 
 async def get_todays_bookings_util():
     async with DbManager(session_factory=AsyncSessionNullPool) as db:
         bookings = await db.bookingsModel.get_todays_bookings()
-        print(f"Bookings={bookings}")
+        return [booking.model_dump() for booking in bookings]
 
 
 @celery_instance.task(name="booking_todays_chekins")
 def get_todays_bookings():
-    asyncio.run(get_todays_bookings_util())
-
+    result = asyncio.run(get_todays_bookings_util())
+    return [
+        {
+            key: value.value if isinstance(value, Enum) else value
+            for key, value in res.items()
+        }
+        for res in result
+    ]
 
 @celery_instance.task
 def save_resized_images(input_path: str):

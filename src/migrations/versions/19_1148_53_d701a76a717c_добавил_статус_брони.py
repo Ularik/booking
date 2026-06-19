@@ -1,8 +1,8 @@
 """добавил статус брони
 
-Revision ID: fc1a87d498e7
+Revision ID: d701a76a717c
 Revises: eb6771b55c67
-Create Date: 2026-06-19 09:54:28.122405
+Create Date: 2026-06-19 11:48:53.597387
 
 """
 
@@ -12,7 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = "fc1a87d498e7"
+revision: str = "d701a76a717c"
 down_revision: Union[str, Sequence[str], None] = "eb6771b55c67"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
                 native_enum=False,
                 length=20,
             ),
-            server_default="pending",
+            server_default="PENDING",
             nullable=False,
         ),
     )

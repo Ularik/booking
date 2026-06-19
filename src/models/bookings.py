@@ -6,9 +6,9 @@ from datetime import datetime
 from enum import Enum
 
 class Status(Enum):
-    PENDING = "pending"
-    SUCCESS = "success"
-    CANCELED = "canceled"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    CANCELED = "CANCELED"
 
 
 class BookingsOrm(Base):
@@ -21,7 +21,7 @@ class BookingsOrm(Base):
     price: Mapped[int]
     status: Mapped[Status] = mapped_column(
         SAEnum(Status, native_enum=False, length=20),
-        default=Status.PENDING.value,
+        default=Status.PENDING,
         server_default=Status.PENDING.value
     )
     is_paid: Mapped[bool] = mapped_column(default=False, server_default=false())
