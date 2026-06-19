@@ -25,20 +25,11 @@ Markdown
 
 ## 🚀 Быстрый старт (Getting Started)
 
-### Требования (Prerequisites)
-Убедитесь, что у вас установлены:
-- Python 3.11 или выше
-- PostgreSQL и Redis (либо Docker)
-
-### 1. Клонирование репозитория
-```bash
-git clone [https://github.com/Ularik/booking.git)
-
-2. Настройка переменных окружения
+### Настройка переменных окружения
 Создайте файл .env в корневой директории проекта. Вы можете скопировать структуру из примера ниже:
 
 Фрагмент кода
-
+```
 MODE=  # TEST/ # LOCAL/ # DOCKER
 
 DB_NAME=
@@ -55,6 +46,21 @@ REDIS_PORT=6379
 SECRET_KEY=
 ALGORITHM=
 ACCESS_TOKEN_EXPIRE_MINUTES=
+```
+### Docker compose 
+
+установите docker и в корне проекта введите команду
+- docker compose up -d --build 
+
+### Требования (Prerequisites)
+Убедитесь, что у вас установлены:
+- Python 3.11 или выше
+- PostgreSQL и Redis (либо Docker)
+
+### Клонирование репозитория
+```bash
+git clone [https://github.com/Ularik/booking.git)
+```
 3. Локальный запуск (через виртуальное окружение)
 Bash
 # Создание и активация виртуального окружения
@@ -86,7 +92,5 @@ celery -A src.tasks.tasks:celery_app worker --loglevel=info
 Bash
 pytest -v -s
 
-📂 # Документация проекта
-📖 Документация API
 После успешного запуска приложения интерактивная документация (Swagger UI) будет доступна по адресу:
 👉 http://127.0.0.1:8000/docs
