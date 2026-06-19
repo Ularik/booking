@@ -1,10 +1,9 @@
 from celery import Celery
-
 from src.config import settings
 
 broker_url = settings.REDIS_URL
 if settings.MODE == 'DOCKER':
-    broker_url = f"redis://{settings.REDIS_HOST_DOCKER}:{settings.REDIS_PORT}"
+    broker_url = f"redis://{settings.REDIS_HOST_DOCKER}:{settings.REDIS_PORT}/0"
 
 backend_url = broker_url
 

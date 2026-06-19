@@ -8,9 +8,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 
-def generate_pdf(bookings: list[dict], filename="media/bookings.pdf"):
+def generate_pdf(bookings: list[dict], filename="src/media/reports/bookings.pdf"):
     pdfmetrics.registerFont(
-        TTFont("DejaVuSans", "media/fonts/DejaVuSans.ttf")
+        TTFont("DejaVuSans", "src/media/fonts/DejaVuSans.ttf")
     )
 
     styles = getSampleStyleSheet()

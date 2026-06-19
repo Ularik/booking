@@ -1,12 +1,15 @@
 from fastapi.params import Query
 from datetime import date
 from src.api.dependencies import DBDep, AuthUserDep, PaginationDep
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Request
 from src.exceptions import ObjectNotFoundException, NotEmptyRoomsException
 from src.schemas.bookings import BookingAddRequestSchema
 from src.services.bookings import BookingServices
 from src.tasks.tasks import task_generate_pdf, get_todays_bookings
 from celery import chain
+from celery.result import AsyncResult
+from src.tasks.celery_app import celery_instance
+import os
 
 router = APIRouter(prefix="/bookings", tags=["Бронирование"])
 
@@ -65,7 +68,7 @@ async def delete_bookings(
 
 
 @router.post("/reports/generate/")
-async def start_report_generation(request):
+async def start_report_generation():
     report_workflow = chain(
         get_todays_bookings.s() | task_generate_pdf.s()
     )
@@ -73,3 +76,33 @@ async def start_report_generation(request):
     result_group = report_workflow.delay()
 
     return {"task_id": result_group.id, "status": "processing"}
+
+
+@router.get("/reports/")
+async def get_report(task_id: str, request: Request):
+    result = AsyncResult(task_id, app=celery_instance)
+
+    if result.state == "SUCCESS":
+        relative_path = result.result
+
+        file_name = os.path.basename(relative_path)
+
+        full_url = request.url_for("media", path=f"reports/{file_name}")
+        return {
+            "status": "COMPLETED",
+            "result": str(full_url)
+        }
+
+    elif result.state == "PENDING":
+        return {
+            "status": "PENDING",
+            "message": "Задача всё еще выполняется или находится в очереди"
+        }
+
+    elif result.state == "FAILURE":
+        return {
+            "status": "FAILED",
+            "error": str(result.info)
+        }
+
+    return {"status": result.state}

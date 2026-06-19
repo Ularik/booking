@@ -8,6 +8,7 @@ import os
 import asyncio
 from src.utils.generate_pdf import generate_pdf
 from enum import Enum
+import datetime
 
 
 async def delete_booking(booking_id: int):
@@ -27,7 +28,9 @@ def check_is_paid(booking_id: int):
 
 @celery_instance.task
 def task_generate_pdf(bookings: list[dict]):
-    return generate_pdf(bookings)
+    today = datetime.datetime.now()
+    filename = f"src/media/reports/{today.month}_{today.day}_{today.hour}_{today.minute}.pdf"
+    return generate_pdf(bookings, filename=filename)
 
 
 async def get_todays_bookings_util():

@@ -10,7 +10,7 @@ from src.api.users import router as users_router
 from src.api.bookings import router as bookings_router
 from src.api.facilities import router as facilities_router
 from src.api.images import router as images_router
-
+from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +21,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
+app.mount("/media", StaticFiles(directory="src/media"), name="media")
 
 app.include_router(users_router)
 app.include_router(hotels_router)
