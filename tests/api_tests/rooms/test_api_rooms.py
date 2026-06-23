@@ -5,10 +5,11 @@ async def test_add_room(ac):
     hotels_response = await ac.get(
         "/hotels/empty_hotels",
         params={
-            'from_date': '2026-04-15',
-            'to_date': '2026-04-23'
+            'from_date': '2026-06-15',
+            'to_date': '2026-06-23'
         }
     )
+    assert hotels_response.status_code == 200
     hotels = hotels_response.json()
 
     for hotel in hotels:

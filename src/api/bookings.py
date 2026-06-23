@@ -1,9 +1,7 @@
-from fastapi.params import Query
-from datetime import date
+from src.models.bookings import Status
 from src.api.dependencies import DBDep, AuthUserDep, PaginationDep
-from fastapi import APIRouter, Body, HTTPException, Request
-from src.exceptions import ObjectNotFoundException, NotEmptyRoomsException
-from src.schemas.bookings import BookingAddRequestSchema
+from fastapi import APIRouter, Body, Request
+from src.schemas.bookings import BookingAddRequestSchema, BookingUpdateRequestSchema, BookingOutSchema
 from src.services.bookings import BookingServices
 from src.tasks.tasks import task_generate_pdf, get_todays_bookings
 from celery import chain
@@ -19,7 +17,7 @@ async def get_my_bookings(
     user_id: AuthUserDep,
     db: DBDep,
     paging: PaginationDep,
-):
+) -> list[BookingOutSchema]:
     return await BookingServices(db).get_my_bookings(user_id, limit=paging.limit, offset=paging.offset)
 
 
@@ -45,26 +43,44 @@ async def post_bookings(
             }
         }
     ),
-):
-    try:
-        new_booking = await BookingServices(db).add_booking(user_id, data)
-    except ObjectNotFoundException:
-        raise HTTPException(400, "Такой квартиры нет")
-    except NotEmptyRoomsException as ex:
-        raise HTTPException(409, ex.detail)
+) -> BookingOutSchema:
+    new_booking = await BookingServices(db).add_booking(user_id, data)
     return new_booking
 
 
-@router.delete("/")
+@router.delete("/{booking_id}")
 async def delete_bookings(
     user_id: AuthUserDep,
     db: DBDep,
-    room_id: int,
-    from_date: date = Query(date(2026, 3, 17)),
-    to_date: date = Query(date(2026, 3, 23)),
-):
-    await BookingServices(db).delete_booking(room_id, from_date, to_date)
+    booking_id: int,
+) -> dict:
+    await BookingServices(db).delete_booking(booking_id=booking_id)
     return {"message": "delete success"}
+
+@router.patch("/{booking_id}")
+async def patch_booking(
+    user_id: AuthUserDep,
+    db: DBDep,
+    booking_id: int,
+    data: BookingUpdateRequestSchema = Body(
+        openapi_examples={
+            "1": {
+                "summary": "",
+                "description": "",
+                "value": {
+                    "room_id": 25,
+                    "from_date": "2026-06-22",
+                    "to_date": "2026-06-28",
+                },
+            }
+        })
+) -> BookingOutSchema:
+    """
+    :param data: status: SUCCESS, PENDING, CANCELED
+    :return:
+    """
+    result = await BookingServices(db).update_booking(user_id=user_id, booking_id=booking_id, data=data)
+    return result
 
 
 @router.post("/reports/generate/")
@@ -72,9 +88,7 @@ async def start_report_generation():
     report_workflow = chain(
         get_todays_bookings.s() | task_generate_pdf.s()
     )
-
     result_group = report_workflow.delay()
-
     return {"task_id": result_group.id, "status": "processing"}
 
 

@@ -16,6 +16,14 @@ class RoomNotFoundException(NoResultException):
     detail = "Номер не найден"
 
 
+class BookingNotFoundException(NoResultException):
+    detail = "Бронь не найдена"
+
+
+class FacilityNotFoundException(NoResultException):
+    detail = "Удобство не найден"
+
+
 class NotEmptyRoomsException(NoResultException):
     detail = "Таких номеров не осталось"
 
@@ -24,8 +32,13 @@ class UniqueObjIsExistException(Exception):
     detail = 'Такой объект уже существует'
 
 
+class FacilityIsExistException(UniqueObjIsExistException):
+    detail = 'Такая услуга уже существует'
+
+
 class RoomAlreadyExistException(UniqueObjIsExistException):
     detail = 'Такой номер уже существует'
+
 
 class ThisUserIsExistException(UniqueObjIsExistException):
     detail = "Такой пользователь уже существует"

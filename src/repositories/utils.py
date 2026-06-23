@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import select, func
 
-from src.exceptions import NotValidTimedeltaException
+from src.exception_handlers.exceptions import NotValidTimedeltaException
 from src.models.bookings import BookingsOrm
 from src.models.rooms import RoomsOrm
 

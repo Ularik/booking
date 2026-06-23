@@ -1,4 +1,4 @@
-from src.exceptions import UniqueObjIsExistException, ObjectNotFoundException, HotelNotFoundException, \
+from src.exception_handlers.exceptions import UniqueObjIsExistException, ObjectNotFoundException, HotelNotFoundException, \
     RoomAlreadyExistException
 from src.schemas.facilities import FacilitiesRoomsAddSchema
 from src.schemas.rooms import RoomAddRequestSchema, RoomAddSchema, RoomEditSchema, RoomEditRequestSchema

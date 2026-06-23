@@ -1,8 +1,10 @@
 import typing
 from src.database import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, String, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
+from sqlalchemy import ForeignKey, String, DateTime, func, select
 from datetime import datetime
+
+from src.models.bookings import BookingsOrm
 
 if typing.TYPE_CHECKING:
     from src.models.facilities import FacilitiesOrm
@@ -17,6 +19,12 @@ class RoomsOrm(Base):
     description: Mapped[str | None] = mapped_column(String(100))
     price: Mapped[int]
     quantity: Mapped[int]
+    booked_count: Mapped[int] = column_property(
+        select(func.count(BookingsOrm.id))
+        .where(BookingsOrm.room_id == id, BookingsOrm.status == 'SUCCESS')
+        .correlate_except(BookingsOrm)
+        .scalar_subquery()
+    )
     facilities: Mapped[list["FacilitiesOrm"]] = relationship(
         secondary="rooms_facilities", back_populates="rooms"
     )

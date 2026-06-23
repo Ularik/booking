@@ -4,7 +4,7 @@ from src.repositories.users import UsersRepository
 from src.database import AsyncSession
 from src.services.auth import AuthService
 from src.api.dependencies import DBDep, AuthUserDep
-from src.exceptions import UniqueObjIsExistException
+from src.exception_handlers.exceptions import UniqueObjIsExistException
 
 router = APIRouter(prefix="/users", tags=["Пользователи"])
 

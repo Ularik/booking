@@ -2,7 +2,7 @@ from src.tasks.celery_app import celery_instance
 from src.api.dependencies import DbManager
 from src.models.bookings import Status
 from src.database import AsyncSessionNullPool
-from src.schemas.bookings import BookingUpdateSchema
+from src.schemas.bookings import BookingUpdateByCelerySchema
 from PIL import Image
 import os
 import asyncio
@@ -15,7 +15,7 @@ async def delete_booking(booking_id: int):
     async with DbManager(session_factory=AsyncSessionNullPool) as db:
         bookings = await db.bookingsModel.get_one(id=booking_id)
         if bookings.status == Status.PENDING:
-            updated_schema = BookingUpdateSchema(room_id=bookings.room_id, status=Status.CANCELED)
+            updated_schema = BookingUpdateByCelerySchema(room_id=bookings.room_id, status=Status.CANCELED)
             booking = await db.bookingsModel.edit(data=updated_schema, id=booking_id)
             await db.save()
             print(f'Статус обновлен на {booking.status}')

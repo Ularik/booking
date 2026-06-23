@@ -10,7 +10,7 @@ from src.schemas.rooms import (
 )
 from src.api.dependencies import PaginationDep
 from src.api.dependencies import DBDep
-from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, \
+from src.exception_handlers.exceptions import NotValidTimedeltaException, ObjectNotFoundException, \
     RoomAlreadyExistException, HotelNotFoundException
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])

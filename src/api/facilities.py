@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 from src.schemas.facilities import FacilitiesAddSchema
-from src.api.dependencies import DBDep
-
+from src.services.facilities import FacilitiesService
+from src.api.dependencies import DBDep, AuthUserDep
 
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
 
@@ -12,13 +12,20 @@ router = APIRouter(prefix="/facilities", tags=["Удобства"])
 async def get_facilities(
     db: DBDep,
 ):
-    return await db.facilitiesModel.get_filtered_objects()
+    return await FacilitiesService(db).get_facilities()
 
 
 @router.post("/")
 async def post_facilities(db: DBDep, data: FacilitiesAddSchema):
 
-    facilities = await db.facilitiesModel.add_obj(data)
-
-    await db.save()
+    facilities = await FacilitiesService(db).post_facilities(data)
     return facilities
+
+
+@router.delete("/{facility_id}")
+async def delete_facility(
+        user_id: AuthUserDep,
+        db: DBDep,
+        facility_id: int
+):
+    return await FacilitiesService(db).delete_facility(facility_id=facility_id)

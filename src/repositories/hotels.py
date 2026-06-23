@@ -4,6 +4,7 @@ from src.models.hotels import HotelsOrm
 from sqlalchemy import select, func
 from src.repositories.utils import get_free_rooms_ids
 from src.repositories.mappers.mappers import HotelMapper
+from src.schemas.hotels import HotelOutSchema
 
 
 class HotelsRepository(BaseRepository):
@@ -12,7 +13,7 @@ class HotelsRepository(BaseRepository):
 
     async def get_hotels_with_free_rooms(
         self, from_date, to_date, title=None, location=None, limit: int = 10, offset: int = 0
-    ):
+    ) -> list[HotelOutSchema]:
         free_rooms_ids = await get_free_rooms_ids(from_date=from_date, to_date=to_date)
 
         hotels_ids = (

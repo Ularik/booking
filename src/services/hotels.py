@@ -1,5 +1,5 @@
 from src.services.base import BaseService
-from src.schemas.hotels import HotelSchema, HotelsEditSchema
+from src.schemas.hotels import HotelSchema, HotelsEditSchema, HotelOutSchema
 from datetime import date
 
 class HotelsServices(BaseService):
@@ -13,7 +13,7 @@ class HotelsServices(BaseService):
                                title: str | None = None,
                                location: str | None = None,
                                limit: int = 10,
-                               offset: int = 0):
+                               offset: int = 0) -> list[HotelOutSchema]:
         return await self.db.hotelsModel.get_hotels_with_free_rooms(from_date, to_date, title, location, limit, offset)
 
     async def get_one_hotel(self, hotel_id: int):

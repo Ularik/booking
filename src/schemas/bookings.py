@@ -34,12 +34,23 @@ class BookingAddSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
+class BookingUpdateRequestSchema(BaseModel):
+    room_id: int
+    from_date: datetime
+    to_date: datetime
+
+
 class BookingUpdateSchema(BaseModel):
     room_id: int
-    user_id: int | None = None
-    status: Status | None = None
-    is_paid: bool | None = None
-    paid_date: datetime | None = None
+    price: int
+    status: Status
+    from_date: datetime
+    to_date: datetime
+
+
+class BookingUpdateByCelerySchema(BaseModel):
+    room_id: int | None = None
+    status: Status
     from_date: datetime | None = None
     to_date: datetime | None = None
 

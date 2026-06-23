@@ -1,3 +1,4 @@
+from src.models.bookings import Status
 from src.schemas.bookings import BookingAddSchema, BookingUpdateSchema
 from datetime import datetime
 
@@ -18,11 +19,15 @@ async def test_bookings(db):
     assert booking.id
     print(f"New booking: {booking.id}")
 
+    from_date = datetime(year=2026, month=4, day=8)
+    to_date = datetime(year=2026, month=4, day=11)
+
     _updated_data = BookingUpdateSchema(
-        user_id=user.id,
         room_id=room.id,
-        from_date=datetime(year=2026, month=4, day=8),
-        to_date=datetime(year=2026, month=4, day=11),
+        price=room.price * (to_date.day - from_date.day),
+        status=Status.PENDING,
+        from_date=from_date,
+        to_date=to_date
     )
     await db.bookingsModel.edit(_updated_data, id=booking.id)
 

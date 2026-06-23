@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, Query, HTTPException
 from fastapi_cache.decorator import cache
 from datetime import date
 
-from src.exceptions import NotValidTimedeltaException, ObjectNotFoundException, UniqueObjIsExistException
+from src.exception_handlers.exceptions import NotValidTimedeltaException, ObjectNotFoundException, UniqueObjIsExistException
 from src.schemas.hotels import HotelSchema, HotelOutSchema, HotelsEditSchema
 from src.api.dependencies import PaginationDep, DBDep
 from src.services.hotels import HotelsServices
@@ -40,7 +40,7 @@ async def get_empty_hotels(
     location: str = Query(None, description="Локация"),
     from_date: date = Query(date(2026, 3, 17)),
     to_date: date = Query(date(2026, 3, 23)),
-):
+) -> list[HotelOutSchema]:
     try:
         hotels = await HotelsServices(db).get_empty_hotels(
             from_date, to_date, title=title, location=location, limit=paging.limit, offset=paging.offset

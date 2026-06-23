@@ -3,7 +3,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from pydantic import BaseModel
 from src.repositories.mappers.base import DataMapper
 from src.schemas.bookings import BookingOutSchema
-from src.exceptions import ObjectNotFoundException, UniqueObjIsExistException
+from src.exception_handlers.exceptions import ObjectNotFoundException, UniqueObjIsExistException
 from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
 
 class BaseRepository:
@@ -13,7 +13,7 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered_objects(self, *filters, **filters_by) -> list:
+    async def get_filtered_objects(self, *filters, **filters_by) -> list[BaseModel]:
         new_filters = filters_by.copy()
         limit = new_filters.pop("limit", None)
         offset = new_filters.pop("offset", None)
@@ -23,7 +23,6 @@ class BaseRepository:
             query = query.limit(limit)
         if offset:
             query = query.offset(offset)
-        # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(obj) for obj in result.scalars()]
 
@@ -58,10 +57,9 @@ class BaseRepository:
                 raise ObjectNotFoundException from err
             else:
                 raise err
-
         return self.mapper.map_to_domain_entity(result.scalar_one())
 
-    async def edit(self, data: BaseModel, exclude_unset: bool = True, **filters):
+    async def edit(self, data: BaseModel, exclude_unset: bool = True, **filters) -> BaseModel:
 
         query = (
             update(self.model)
