@@ -12,6 +12,7 @@ async def test_add_room(ac):
     assert hotels_response.status_code == 200
     hotels = hotels_response.json()
 
+    new_rooms_id = {}
     for hotel in hotels:
         response = await ac.post(
             f'/hotels/{hotel['id']}/rooms',
@@ -23,4 +24,15 @@ async def test_add_room(ac):
                 quantity=1
             ).model_dump()
         )
-        print(response.json())
+
+        assert response.status_code == 200
+        room = response.json()
+        new_rooms_id[hotel['id']] = room['id']
+
+    for hotel_id, room_id in new_rooms_id.items():
+        response = await ac.get(
+            f'/hotels/{hotel_id}/rooms/{room_id}'
+        )
+        assert response.status_code == 200
+
+

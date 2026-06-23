@@ -31,7 +31,7 @@ async def add_hotel(
     return new_hotel
 
 
-@router.get("/empty_hotels")
+@router.get("/hotels_with_free_rooms")
 @cache(expire=15)
 async def get_empty_hotels(
     db: DBDep,

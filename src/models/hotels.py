@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, validates
 from src.database import Base
-from sqlalchemy import String, DateTime, func
+from sqlalchemy import String, DateTime, func, CheckConstraint, UniqueConstraint
 from datetime import datetime
 
 
@@ -16,3 +16,15 @@ class HotelsOrm(Base):
         server_default=func.timezone('Asia/Bishkek', func.now()),
         onupdate=func.timezone('Asia/Bishkek', func.now())
     )
+    __table_args__ = (
+        UniqueConstraint('title', 'location', name='_title_location_uc'),
+    )
+
+    @validates('title', 'location')
+    def lowerCase(self, key, value):
+        def lowercase_fields(self, key, value):
+            if value is not None:
+                return value.strip().lower()
+            return value
+
+

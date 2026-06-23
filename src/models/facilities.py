@@ -20,7 +20,7 @@ class FacilitiesOrm(Base):
     @validates('title')
     def title_lower(self, key, title: str):
         if not title.islower():
-            title = title.lower()
+            title = title.strip().lower()
         return title
 
 class RoomsFacilitiesOrm(Base):
